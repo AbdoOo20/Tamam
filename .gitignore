@@ -26,3 +26,5 @@ secrets.json
 
 .DS_Store
 Thumbs.db
+/src/Tamam.Api/appsettings.json
+/src/Tamam.Api/appsettings.Development.json
