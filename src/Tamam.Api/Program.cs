@@ -7,9 +7,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddControllers();
 
+builder.Services.AddOpenApi();
+
 builder.Services.AddInfrastructure(connectionString);
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Tamam API v1"));
+}
 
 app.UseHttpsRedirection();
 
