@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 using Tamam.Application.Abstractions;
 
-using Tamam.Application.Auth;
+using Tamam.Application.DTOs.Auth;
+
+using Tamam.Application.Services.Auth;
 
 namespace Tamam.Api.Controllers;
 

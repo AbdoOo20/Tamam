@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Tamam.Application.Staff;
+using Tamam.Application.DTOs.Staff;
+
+using Tamam.Application.Services.Staff;
 
 using Tamam.Domain.Constants;
 

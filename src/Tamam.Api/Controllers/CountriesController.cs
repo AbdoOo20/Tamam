@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using Tamam.Application.Abstractions;
 
-using Tamam.Application.Countries;
+using Tamam.Application.DTOs.Countries;
 
 using Tamam.Domain.Entities;
 
