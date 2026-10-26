@@ -4,38 +4,34 @@ using Microsoft.AspNetCore.Mvc;
 
 using Tamam.Application.Abstractions;
 
+using Tamam.Application.Common;
+
 using Tamam.Application.DTOs.Auth;
 
 using Tamam.Application.Services.Auth;
 
 namespace Tamam.Api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController(IAuthService authService, IUserAppService userAppService) : ControllerBase
+public class AuthController(IAuthService authService, IUserAppService userAppService) : ApiControllerBase
 {
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<Result<AuthResponse>>> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
-        var result = await authService.RegisterMerchantAsync(request, cancellationToken);
-
-        return result.Succeeded ? Ok(result.Value) : BadRequest(new { errors = result.Errors });
+        return Respond(await authService.RegisterMerchantAsync(request, cancellationToken));
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponse>> Login(LoginRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<Result<AuthResponse>>> Login(LoginRequest request, CancellationToken cancellationToken)
     {
-        var result = await authService.LoginAsync(request, cancellationToken);
-
-        return result.Succeeded ? Ok(result.Value) : Unauthorized(new { errors = result.Errors });
+        return Respond(await authService.LoginAsync(request, cancellationToken));
     }
 
     [Authorize]
     [HttpGet("me")]
-    public ActionResult<object> Me()
+    public ActionResult<Result<CurrentUserDto>> Me()
     {
-        return Ok(new { userAppService.UserId, userAppService.MerchantId, userAppService.Role });
+        return Respond(Result<CurrentUserDto>.Ok(new CurrentUserDto(userAppService.UserId, userAppService.MerchantId, userAppService.Role)));
     }
 }
