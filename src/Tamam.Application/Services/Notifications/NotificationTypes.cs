@@ -13,4 +13,6 @@ public static class NotificationTypes
     public const string RejectionReported = "RejectionReported";
 
     public const string RejectionSurveyAnswered = "RejectionSurveyAnswered";
+
+    public const string TrialEnding = "TrialEnding";
 }

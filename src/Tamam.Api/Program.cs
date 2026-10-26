@@ -1,3 +1,5 @@
+using Tamam.Api.BackgroundServices;
+
 using Tamam.Api.Extensions;
 
 using Tamam.Api.ExceptionHandling;
@@ -14,6 +16,8 @@ using Tamam.Application.Settings;
 
 using Tamam.Infrastructure;
 
+using Tamam.Infrastructure.Seeding;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -25,6 +29,8 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 builder.Services.Configure<PublicLinksSettings>(builder.Configuration.GetSection(PublicLinksSettings.SectionName));
+
+builder.Services.Configure<PlatformAdminSettings>(builder.Configuration.GetSection(PlatformAdminSettings.SectionName));
 
 builder.Services.AddControllers();
 
@@ -48,7 +54,13 @@ builder.Services.AddJwtAuthentication(jwtSettings);
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddApiRateLimiting();
+
+builder.Services.AddHostedService<MaintenanceWorker>();
+
 var app = builder.Build();
+
+await app.Services.SeedPlatformAdminAsync();
 
 app.UseExceptionHandler();
 
@@ -62,6 +74,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

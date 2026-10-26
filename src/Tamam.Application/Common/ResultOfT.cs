@@ -29,5 +29,9 @@ public class Result<T> : Result
 
     public static new Result<T> UnprocessableEntity(params string[] errors) => new(ResultStatus.UnprocessableEntity, default, "Validation failed.", errors);
 
+    public static new Result<T> TooManyRequests(string? message = null) => new(ResultStatus.TooManyRequests, default, message ?? "Too many requests. Please try again later.", null);
+
+    public static Result<T> From(Result failure) => new(failure.Status, default, failure.Message, failure.Errors);
+
     public static new Result<T> InternalServerError(string? message = null) => new(ResultStatus.InternalServerError, default, message ?? "An unexpected error occurred.", null);
 }

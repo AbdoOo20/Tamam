@@ -46,5 +46,7 @@ public class Result
 
     public static Result UnprocessableEntity(params string[] errors) => new(ResultStatus.UnprocessableEntity, "Validation failed.", errors);
 
+    public static Result TooManyRequests(string? message = null) => new(ResultStatus.TooManyRequests, message ?? "Too many requests. Please try again later.", null);
+
     public static Result InternalServerError(string? message = null) => new(ResultStatus.InternalServerError, message ?? "An unexpected error occurred.", null);
 }

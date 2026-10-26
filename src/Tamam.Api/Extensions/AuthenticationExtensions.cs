@@ -1,8 +1,12 @@
 using System.Text;
 
+using Microsoft.AspNetCore.Authentication;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using Microsoft.IdentityModel.Tokens;
+
+using Tamam.Api.Authentication;
 
 using Tamam.Application.Common;
 
@@ -54,7 +58,8 @@ public static class AuthenticationExtensions
 
                 OnForbidden = context => context.Response.WriteResultAsync(Result.Forbidden(), context.HttpContext.RequestAborted)
             };
-        });
+        })
+            .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(ApiKeyDefaults.Scheme, _ => { });
 
         return services;
     }

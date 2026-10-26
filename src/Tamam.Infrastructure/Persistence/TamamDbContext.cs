@@ -1,10 +1,14 @@
 using System.Linq.Expressions;
 
+using System.Text.Json;
+
 using Microsoft.AspNetCore.Identity;
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
+
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 using Tamam.Application.Abstractions;
 
@@ -84,14 +88,51 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
     {
         ApplyAuditAndSoftDelete();
 
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        var pending = CollectAuditTrail();
+
+        using var transaction = pending.Count > 0 && Database.CurrentTransaction is null ? Database.BeginTransaction() : null;
+
+        var affected = base.SaveChanges(acceptAllChangesOnSuccess);
+
+        if (pending.Count > 0)
+        {
+            AuditLogs.AddRange(pending.Select(CreateAuditLog));
+
+            ApplyAuditAndSoftDelete();
+
+            base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        transaction?.Commit();
+
+        return affected;
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         ApplyAuditAndSoftDelete();
 
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        var pending = CollectAuditTrail();
+
+        await using var transaction = pending.Count > 0 && Database.CurrentTransaction is null ? await Database.BeginTransactionAsync(cancellationToken) : null;
+
+        var affected = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+
+        if (pending.Count > 0)
+        {
+            AuditLogs.AddRange(pending.Select(CreateAuditLog));
+
+            ApplyAuditAndSoftDelete();
+
+            await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
+        return affected;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -168,5 +209,187 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
                 auditable.UpdatedBy = currentUserId;
             }
         }
+    }
+
+    private static readonly HashSet<Type> AuditedTypes =
+
+    [
+
+    typeof(Order),
+
+    typeof(Product),
+
+    typeof(Carrier),
+
+    typeof(Merchant),
+
+    typeof(MerchantConsent),
+
+    typeof(MerchantSubscription),
+
+    typeof(User),
+
+    typeof(Plan),
+
+    typeof(RiskRule),
+
+    typeof(CustomerDataRequest)
+
+    ];
+
+    private static readonly HashSet<string> IgnoredAuditProperties =
+
+    [
+
+    nameof(IAuditable.CreatedAt),
+
+    nameof(IAuditable.CreatedBy),
+
+    nameof(IAuditable.UpdatedAt),
+
+    nameof(IAuditable.UpdatedBy),
+
+    nameof(ISoftDeletable.IsDeleted),
+
+    "RowVersion",
+
+    "ConcurrencyStamp",
+
+    "SecurityStamp",
+
+    "NormalizedUserName",
+
+    "NormalizedEmail",
+
+    "AccessFailedCount",
+
+    "LockoutEnd",
+
+    "LastLoginAt"
+
+    ];
+
+    private static readonly HashSet<string> RedactedAuditProperties =
+
+    [
+
+    "PasswordHash",
+
+    "ApiKeyHash"
+
+    ];
+
+    private sealed record PendingAudit(EntityEntry Entry, string Action, Dictionary<string, object?>? OldValues, Dictionary<string, object?>? NewValues);
+
+    private List<PendingAudit> CollectAuditTrail()
+    {
+        var pending = new List<PendingAudit>();
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (!AuditedTypes.Contains(entry.Entity.GetType()))
+            {
+                continue;
+            }
+
+            if (entry.State == EntityState.Added)
+            {
+                var created = new Dictionary<string, object?>();
+
+                foreach (var property in entry.Properties)
+                {
+                    if (property.Metadata.IsPrimaryKey() || property.Metadata.ValueGenerated != Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never || IgnoredAuditProperties.Contains(property.Metadata.Name) || property.CurrentValue is null)
+                    {
+                        continue;
+                    }
+
+                    created[property.Metadata.Name] = AuditValue(property.Metadata.Name, property.CurrentValue);
+                }
+
+                pending.Add(new PendingAudit(entry, "Create", null, created));
+
+                continue;
+            }
+
+            if (entry.State != EntityState.Modified)
+            {
+                continue;
+            }
+
+            if (entry.Entity is ISoftDeletable { IsDeleted: true } && entry.Property(nameof(ISoftDeletable.IsDeleted)).IsModified)
+            {
+                pending.Add(new PendingAudit(entry, "Delete", null, null));
+
+                continue;
+            }
+
+            var before = new Dictionary<string, object?>();
+
+            var after = new Dictionary<string, object?>();
+
+            foreach (var property in entry.Properties)
+            {
+                if (!property.IsModified || IgnoredAuditProperties.Contains(property.Metadata.Name) || Equals(property.OriginalValue, property.CurrentValue))
+                {
+                    continue;
+                }
+
+                before[property.Metadata.Name] = AuditValue(property.Metadata.Name, property.OriginalValue);
+
+                after[property.Metadata.Name] = AuditValue(property.Metadata.Name, property.CurrentValue);
+            }
+
+            if (after.Count > 0)
+            {
+                pending.Add(new PendingAudit(entry, "Update", before, after));
+            }
+        }
+
+        return pending;
+    }
+
+    private static object? AuditValue(string propertyName, object? value) => RedactedAuditProperties.Contains(propertyName) ? "[redacted]" : value;
+
+    private AuditLog CreateAuditLog(PendingAudit pending)
+    {
+        var entry = pending.Entry;
+
+        var keyProperties = entry.Metadata.FindPrimaryKey()?.Properties ?? [];
+
+        var entityId = string.Join(",", keyProperties.Select(property => entry.Property(property.Name).CurrentValue?.ToString()));
+
+        return new AuditLog
+        {
+            MerchantId = ResolveMerchantId(entry),
+
+            UserId = userAppService.UserId,
+
+            Action = pending.Action,
+
+            EntityName = entry.Metadata.ClrType.Name,
+
+            EntityId = entityId.Length == 0 ? null : entityId,
+
+            OldValues = pending.OldValues is null ? null : JsonSerializer.Serialize(pending.OldValues),
+
+            NewValues = pending.NewValues is null ? null : JsonSerializer.Serialize(pending.NewValues),
+
+            IpAddress = userAppService.IpAddress
+        };
+    }
+
+    private int? ResolveMerchantId(EntityEntry entry)
+    {
+        if (entry.Entity is Merchant merchant)
+        {
+            return merchant.Id;
+        }
+
+        if (entry.Metadata.FindProperty("MerchantId") is not null && entry.Property("MerchantId").CurrentValue is int merchantId)
+        {
+            return merchantId;
+        }
+
+        return userAppService.MerchantId;
     }
 }

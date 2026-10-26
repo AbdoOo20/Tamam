@@ -1,5 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using Tamam.Application.Services.Admin;
+
+using Tamam.Application.Services.Audit;
+
 using Tamam.Application.Services.Billing;
 
 using Tamam.Application.Services.Carriers;
@@ -8,7 +12,13 @@ using Tamam.Application.Services.Countries;
 
 using Tamam.Application.Services.Customers;
 
+using Tamam.Application.Services.DataRequests;
+
+using Tamam.Application.Services.Integrations;
+
 using Tamam.Application.Services.Lookups;
+
+using Tamam.Application.Services.Maintenance;
 
 using Tamam.Application.Services.Merchants;
 
@@ -75,6 +85,22 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
 
         services.AddScoped<IReportService, ReportService>();
+
+        services.AddScoped<IAuditLogService, AuditLogService>();
+
+        services.AddScoped<IApiKeyService, ApiKeyService>();
+
+        services.AddScoped<IIntegrationService, IntegrationService>();
+
+        services.AddScoped<IAdminMerchantService, AdminMerchantService>();
+
+        services.AddScoped<IAdminCatalogService, AdminCatalogService>();
+
+        services.AddScoped<IDataRequestService, DataRequestService>();
+
+        services.AddScoped<IQualityStatService, QualityStatService>();
+
+        services.AddScoped<IMaintenanceService, MaintenanceService>();
 
         return services;
     }

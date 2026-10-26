@@ -29,6 +29,8 @@ public class PlanConfiguration : IEntityTypeConfiguration<Plan>
             .IsUnique();
 
         builder.HasData(
-            new Plan { Id = 1, Code = "TRIAL", NameAr = "تجريبي", MonthlyFee = 0m, PricePerCheckedOrder = 0m, IncludedOrders = 200, CurrencyCode = "USD", IsActive = true });
+            new Plan { Id = 1, Code = "TRIAL", NameAr = "تجريبي", MonthlyFee = 0m, PricePerCheckedOrder = 0m, IncludedOrders = 200, CurrencyCode = "USD", IsActive = true },
+
+            new Plan { Id = 2, Code = "PAYG", NameAr = "الدفع حسب الاستخدام", MonthlyFee = 0m, PricePerCheckedOrder = 0.05m, IncludedOrders = 0, CurrencyCode = "USD", IsActive = true });
     }
 }

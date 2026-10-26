@@ -10,5 +10,9 @@ public interface IBillingService
 
     Task<Result<SubscriptionDto>> GetSubscriptionAsync(CancellationToken cancellationToken = default);
 
+    Task<Result<SubscriptionDto>> ChangePlanAsync(ChangePlanRequest request, CancellationToken cancellationToken = default);
+
+    Task<Result<SubscriptionDto>> ChangePlanForMerchantAsync(int merchantId, ChangePlanRequest request, CancellationToken cancellationToken = default);
+
     Task<Result<UsageSummaryDto>> GetUsageAsync(DateTime? from, DateTime? to, CancellationToken cancellationToken = default);
 }
