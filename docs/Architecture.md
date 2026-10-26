@@ -56,3 +56,12 @@ Tamam.Api
    - needs an external library (Identity, SMTP, WhatsApp API) -> `Infrastructure/Services/<Feature>`
    - needs `HttpContext` -> `Api/Services`
 3. Register it in `DependencyInjection.cs` of the layer that owns the implementation.
+
+## Request flow and responses
+
+`Controller -> Service (Application) -> IUnitOfWork -> DbContext`
+
+- Controllers inherit `ApiControllerBase`, never touch `IUnitOfWork`, and only call a service then `Respond(result)`.
+- Every service returns `Result` / `Result<T>` (`Application/Common`). Factories: `Ok`, `Created`, `BadRequest`, `Unauthorized`, `Forbidden`, `NotFound`, `Conflict`, `UnprocessableEntity`, `InternalServerError`.
+- Every HTTP response has the same JSON shape: `{ succeeded, statusCode, message, errors, data }`.
+- Unhandled exceptions (`ExceptionHandlingMiddleware`), model-validation failures, and JWT 401/403 are returned in the same shape.

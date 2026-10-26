@@ -1,12 +1,12 @@
-using System.Text;
+using Tamam.Api.Extensions;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-
-using Microsoft.IdentityModel.Tokens;
+using Tamam.Api.Middleware;
 
 using Tamam.Api.OpenApi;
 
 using Tamam.Api.Services;
+
+using Tamam.Application;
 
 using Tamam.Application.Abstractions;
 
@@ -26,43 +26,19 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSett
 
 builder.Services.AddControllers();
 
+builder.Services.AddApiResponses();
+
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IUserAppService, UserAppService>();
 
+builder.Services.AddApplication();
+
 builder.Services.AddInfrastructure(connectionString);
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-{
-    options.MapInboundClaims = false;
-
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-
-        ValidIssuer = jwtSettings.Issuer,
-
-        ValidateAudience = true,
-
-        ValidAudience = jwtSettings.Audience,
-
-        ValidateIssuerSigningKey = true,
-
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
-
-        ValidateLifetime = true,
-
-        ClockSkew = TimeSpan.FromMinutes(1),
-
-        NameClaimType = "name",
-
-        RoleClaimType = "role"
-    };
-});
+builder.Services.AddJwtAuthentication(jwtSettings);
 
 builder.Services.AddAuthorization();
 
@@ -74,6 +50,8 @@ if (app.Environment.IsDevelopment())
 
     app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Tamam API v1"));
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

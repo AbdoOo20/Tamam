@@ -36,12 +36,12 @@ public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, 
 
         if (country is null || !country.IsActive)
         {
-            return Result<AuthResponse>.Fail("Country is not supported.");
+            return Result<AuthResponse>.BadRequest("Country is not supported.");
         }
 
         if (await userManager.FindByEmailAsync(request.Email) is not null)
         {
-            return Result<AuthResponse>.Fail("Email is already registered.");
+            return Result<AuthResponse>.Conflict("Email is already registered.");
         }
 
         await unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -88,14 +88,14 @@ public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, 
             {
                 await unitOfWork.RollbackTransactionAsync(cancellationToken);
 
-                return Result<AuthResponse>.Fail(createResult.Errors.Select(error => error.Description));
+                return Result<AuthResponse>.BadRequest(createResult.Errors.Select(error => error.Description));
             }
 
             await userManager.AddToRoleAsync(user, RoleNames.Owner);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return Result<AuthResponse>.Ok(await BuildResponseAsync(user));
+            return Result<AuthResponse>.Created(await BuildResponseAsync(user), "Merchant registered successfully.");
         }
 
         catch
@@ -114,19 +114,19 @@ public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, 
 
         if (user is null || !user.IsActive)
         {
-            return Result<AuthResponse>.Fail(invalidCredentials);
+            return Result<AuthResponse>.Unauthorized(invalidCredentials);
         }
 
         if (await userManager.IsLockedOutAsync(user))
         {
-            return Result<AuthResponse>.Fail("Account is locked. Try again later.");
+            return Result<AuthResponse>.Forbidden("Account is locked. Try again later.");
         }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))
         {
             await userManager.AccessFailedAsync(user);
 
-            return Result<AuthResponse>.Fail(invalidCredentials);
+            return Result<AuthResponse>.Unauthorized(invalidCredentials);
         }
 
         await userManager.ResetAccessFailedCountAsync(user);
