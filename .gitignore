@@ -1,5 +1,28 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿.vs/
+.vscode/
+.idea/
 
-/.vs/Tamam.slnx
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+*.log
+*.nupkg
+*.snupkg
+
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+
+.env
+appsettings.Local.json
+secrets.json
+
+.DS_Store
+Thumbs.db
