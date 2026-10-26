@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Tamam.Domain/Tamam.Domain.csproj" />
+    <Project Path="src/Tamam.Application/Tamam.Application.csproj" />
+    <Project Path="src/Tamam.Infrastructure/Tamam.Infrastructure.csproj" />
+    <Project Path="src/Tamam.Api/Tamam.Api.csproj" />
+  </Folder>
+</Solution>

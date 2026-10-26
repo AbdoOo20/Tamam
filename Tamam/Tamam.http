@@ -1,6 +1,0 @@
-@Tamam_HostAddress = http://localhost:5183
-
-GET {{Tamam_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
