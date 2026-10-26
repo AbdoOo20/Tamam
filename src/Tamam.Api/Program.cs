@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using Microsoft.IdentityModel.Tokens;
 
+using Tamam.Api.OpenApi;
+
 using Tamam.Api.Services;
 
 using Tamam.Application.Abstractions;
 
-using Tamam.Application.Auth;
+using Tamam.Application.Settings;
 
 using Tamam.Infrastructure;
 

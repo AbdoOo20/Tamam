@@ -6,17 +6,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Tamam.Application.Abstractions;
 
-using Tamam.Application.Auth;
+using Tamam.Application.Services.Auth;
 
-using Tamam.Application.Staff;
+using Tamam.Application.Services.Staff;
 
 using Tamam.Domain.Entities;
-
-using Tamam.Infrastructure.Identity;
 
 using Tamam.Infrastructure.Persistence;
 
 using Tamam.Infrastructure.Persistence.Repositories;
+
+using Tamam.Infrastructure.Services.Auth;
+
+using Tamam.Infrastructure.Services.Staff;
 
 namespace Tamam.Infrastructure;
 
