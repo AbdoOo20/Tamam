@@ -30,6 +30,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasIndex(x => new { x.MerchantId, x.Sku })
             .HasDatabaseName("UX_Products_Merchant_Sku")
             .IsUnique()
-            .HasFilter("[Sku] IS NOT NULL");
+            .HasFilter("[Sku] IS NOT NULL AND [IsDeleted] = 0");
     }
 }

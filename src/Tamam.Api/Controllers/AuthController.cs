@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.RateLimiting;
+
+using Tamam.Api.RateLimiting;
+
 using Tamam.Application.Abstractions;
 
 using Tamam.Application.Common;
@@ -15,6 +19,7 @@ namespace Tamam.Api.Controllers;
 public class AuthController(IAuthService authService, IUserAppService userAppService) : ApiControllerBase
 {
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("register")]
     public async Task<ActionResult<Result<AuthResponse>>> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
@@ -22,6 +27,7 @@ public class AuthController(IAuthService authService, IUserAppService userAppSer
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     [HttpPost("login")]
     public async Task<ActionResult<Result<AuthResponse>>> Login(LoginRequest request, CancellationToken cancellationToken)
     {

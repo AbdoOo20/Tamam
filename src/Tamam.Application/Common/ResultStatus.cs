@@ -20,5 +20,7 @@ public enum ResultStatus
 
     UnprocessableEntity = 422,
 
+    TooManyRequests = 429,
+
     InternalServerError = 500
 }

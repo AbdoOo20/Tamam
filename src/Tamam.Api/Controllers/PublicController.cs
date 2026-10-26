@@ -2,11 +2,19 @@ using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.RateLimiting;
+
+using Tamam.Api.RateLimiting;
+
 using Tamam.Application.Common;
+
+using Tamam.Application.DTOs.DataRequests;
 
 using Tamam.Application.DTOs.Lookups;
 
 using Tamam.Application.DTOs.Public;
+
+using Tamam.Application.Services.DataRequests;
 
 using Tamam.Application.Services.Lookups;
 
@@ -15,7 +23,8 @@ using Tamam.Application.Services.Public;
 namespace Tamam.Api.Controllers;
 
 [AllowAnonymous]
-public class PublicController(IPublicOrderService publicOrderService, ILookupService lookupService) : ApiControllerBase
+[EnableRateLimiting(RateLimitPolicies.Public)]
+public class PublicController(IPublicOrderService publicOrderService, ILookupService lookupService, IDataRequestService dataRequestService) : ApiControllerBase
 {
     [HttpGet("links/{token}")]
     public async Task<ActionResult<Result<PublicOrderDto>>> Get(string token, CancellationToken cancellationToken)
@@ -57,5 +66,11 @@ public class PublicController(IPublicOrderService publicOrderService, ILookupSer
     public async Task<ActionResult<Result<IReadOnlyList<RejectionReasonDto>>>> GetRejectionReasons(CancellationToken cancellationToken)
     {
         return Respond(await lookupService.GetRejectionReasonsAsync(cancellationToken));
+    }
+
+    [HttpPost("links/{token}/data-request")]
+    public async Task<ActionResult<Result>> SubmitDataRequest(string token, CreateDataRequestRequest request, CancellationToken cancellationToken)
+    {
+        return Respond(await dataRequestService.SubmitFromLinkAsync(token, request, cancellationToken));
     }
 }

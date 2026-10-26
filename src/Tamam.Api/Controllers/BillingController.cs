@@ -8,6 +8,8 @@ using Tamam.Application.DTOs.Billing;
 
 using Tamam.Application.Services.Billing;
 
+using Tamam.Domain.Constants;
+
 namespace Tamam.Api.Controllers;
 
 [Authorize]
@@ -23,6 +25,13 @@ public class BillingController(IBillingService billingService) : ApiControllerBa
     public async Task<ActionResult<Result<SubscriptionDto>>> GetSubscription(CancellationToken cancellationToken)
     {
         return Respond(await billingService.GetSubscriptionAsync(cancellationToken));
+    }
+
+    [HttpPost("subscription/change")]
+    [Authorize(Roles = RoleNames.Owner)]
+    public async Task<ActionResult<Result<SubscriptionDto>>> ChangePlan(ChangePlanRequest request, CancellationToken cancellationToken)
+    {
+        return Respond(await billingService.ChangePlanAsync(request, cancellationToken));
     }
 
     [HttpGet("usage")]

@@ -29,4 +29,15 @@ public static class NotificationFactory
 
         RelatedOrderId = orderId
     };
+
+    public static Notification ForMerchant(int merchantId, string type, string title, string? body = null) => new()
+    {
+        MerchantId = merchantId,
+
+        Type = type,
+
+        Title = title,
+
+        Body = body
+    };
 }

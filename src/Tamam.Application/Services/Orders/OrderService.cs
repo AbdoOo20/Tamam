@@ -383,6 +383,86 @@ public class OrderService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
+    public async Task<Result<OrderDetailDto>> UpdateItemsAsync(long id, UpdateOrderItemsRequest request, CancellationToken cancellationToken = default)
+    {
+        var merchantId = userAppService.RequiredMerchantId;
+
+        var order = await unitOfWork.Repository<Order>().FirstOrDefaultAsync(item => item.Id == id && item.MerchantId == merchantId, cancellationToken);
+
+        if (order is null)
+        {
+            return Result<OrderDetailDto>.NotFound("Order was not found.");
+        }
+
+        if (!EditableStatuses.Contains(order.StatusId))
+        {
+            return Result<OrderDetailDto>.BadRequest("This order can no longer be edited.");
+        }
+
+        var productIds = request.Items.Where(item => item.ProductId.HasValue).Select(item => item.ProductId!.Value).Distinct().ToList();
+
+        if (productIds.Count > 0 && await unitOfWork.Repository<Product>().CountAsync(product => productIds.Contains(product.Id) && product.MerchantId == merchantId, cancellationToken) != productIds.Count)
+        {
+            return Result<OrderDetailDto>.BadRequest("One or more products were not found.");
+        }
+
+        var itemsTotal = request.Items.Sum(item => item.Quantity * item.UnitPrice);
+
+        var total = itemsTotal + order.ShippingFee - order.DiscountAmount;
+
+        if (total < 0)
+        {
+            return Result<OrderDetailDto>.BadRequest("Discount cannot exceed the order value.");
+        }
+
+        if (order.DepositAmount > total)
+        {
+            return Result<OrderDetailDto>.BadRequest("The deposit cannot exceed the new order total.");
+        }
+
+        var currentItems = await unitOfWork.Repository<OrderItem>().Query(false).Where(item => item.OrderId == id).ToListAsync(cancellationToken);
+
+        unitOfWork.Repository<OrderItem>().RemoveRange(currentItems);
+
+        await unitOfWork.Repository<OrderItem>().AddRangeAsync(request.Items.Select(item => new OrderItem
+        {
+            OrderId = id,
+
+            ProductId = item.ProductId,
+
+            ProductName = item.ProductName.Trim(),
+
+            Variant = item.Variant?.Trim(),
+
+            Quantity = item.Quantity,
+
+            UnitPrice = item.UnitPrice
+        }).ToList(), cancellationToken);
+
+        order.ItemsTotal = itemsTotal;
+
+        order.TotalAmount = total;
+
+        order.StatusHistory.Add(new OrderStatusHistory
+        {
+            FromStatusId = order.StatusId,
+
+            ToStatusId = order.StatusId,
+
+            ChangedByType = ActorType.MerchantUser,
+
+            ChangedByUserId = userAppService.UserId,
+
+            Note = "Order items updated.",
+
+            ChangedAt = DateTime.UtcNow
+        });
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return await GetByIdAsync(id, cancellationToken);
+    }
+
     public async Task<Result<OrderDetailDto>> ChangeStatusAsync(long id, ChangeOrderStatusRequest request, CancellationToken cancellationToken = default)
     {
         var merchantId = userAppService.RequiredMerchantId;

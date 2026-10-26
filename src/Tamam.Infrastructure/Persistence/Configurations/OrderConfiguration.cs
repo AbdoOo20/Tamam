@@ -110,7 +110,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.HasIndex(x => new { x.MerchantId, x.OrderNo })
             .HasDatabaseName("UQ_Orders_Merchant_OrderNo")
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         builder.HasIndex(x => new { x.MerchantId, x.PlacedAt })
             .HasDatabaseName("IX_Orders_Merchant_Placed")

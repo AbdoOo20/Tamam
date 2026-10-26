@@ -60,6 +60,12 @@ public class OrdersController(
         return Respond(await orderService.UpdateAsync(id, request, cancellationToken));
     }
 
+    [HttpPut("{id:long}/items")]
+    public async Task<ActionResult<Result<OrderDetailDto>>> UpdateItems(long id, UpdateOrderItemsRequest request, CancellationToken cancellationToken)
+    {
+        return Respond(await orderService.UpdateItemsAsync(id, request, cancellationToken));
+    }
+
     [HttpDelete("{id:long}")]
     public async Task<ActionResult<Result>> Delete(long id, CancellationToken cancellationToken)
     {
