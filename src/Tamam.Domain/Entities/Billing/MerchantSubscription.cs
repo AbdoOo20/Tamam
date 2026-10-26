@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class MerchantSubscription
+public class MerchantSubscription : BaseEntity<int>
 {
-    public int Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public short PlanId { get; set; }

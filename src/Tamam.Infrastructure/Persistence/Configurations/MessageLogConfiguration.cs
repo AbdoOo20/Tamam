@@ -24,8 +24,6 @@ public class MessageLogConfiguration : IEntityTypeConfiguration<MessageLog>
 
         builder.Property(x => x.Cost).HasPrecision(10, 4);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Order)
             .WithMany(x => x.MessageLogs)
             .HasForeignKey(x => x.OrderId)

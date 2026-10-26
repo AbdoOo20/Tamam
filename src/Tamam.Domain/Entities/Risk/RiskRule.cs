@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class RiskRule
+public class RiskRule : BaseEntity<short>
 {
-    public short Id { get; set; }
-
     public string Code { get; set; } = string.Empty;
 
     public string NameAr { get; set; } = string.Empty;

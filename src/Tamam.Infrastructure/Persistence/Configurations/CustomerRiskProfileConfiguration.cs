@@ -12,17 +12,15 @@ public class CustomerRiskProfileConfiguration : IEntityTypeConfiguration<Custome
     {
         builder.ToTable("CustomerRiskProfiles");
 
-        builder.HasKey(x => x.CustomerId);
+        builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.CustomerId).ValueGeneratedNever();
+        builder.Property(x => x.Id).HasColumnName("CustomerId").ValueGeneratedNever();
 
         builder.Property(x => x.WeightedFaultScore).HasPrecision(8, 2);
 
-        builder.Property(x => x.UpdatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Customer)
             .WithOne(x => x.RiskProfile)
-            .HasForeignKey<CustomerRiskProfile>(x => x.CustomerId)
+            .HasForeignKey<CustomerRiskProfile>(x => x.Id)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

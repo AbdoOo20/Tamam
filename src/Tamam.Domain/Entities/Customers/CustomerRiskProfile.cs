@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class CustomerRiskProfile
+public class CustomerRiskProfile : BaseEntity<long>
 {
-    public long CustomerId { get; set; }
-
     public int TotalOrders { get; set; }
 
     public int DeliveredCount { get; set; }
@@ -21,8 +21,6 @@ public class CustomerRiskProfile
     public DateTime? LastOrderAt { get; set; }
 
     public DateTime? LastCustomerFaultRefusalAt { get; set; }
-
-    public DateTime UpdatedAt { get; set; }
 
     public Customer Customer { get; set; } = null!;
 }

@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class Customer
+public class Customer : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public byte[] PhoneHash { get; set; } = [];
 
     public string CountryCode { get; set; } = string.Empty;

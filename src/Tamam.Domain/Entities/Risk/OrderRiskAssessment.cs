@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class OrderRiskAssessment
+public class OrderRiskAssessment : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long OrderId { get; set; }
 
     public byte Score { get; set; }
@@ -23,8 +23,6 @@ public class OrderRiskAssessment
     public int? DecidedByUserId { get; set; }
 
     public DateTime? DecidedAt { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Order Order { get; set; } = null!;
 

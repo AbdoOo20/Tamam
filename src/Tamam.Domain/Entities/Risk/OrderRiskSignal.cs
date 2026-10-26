@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class OrderRiskSignal
+public class OrderRiskSignal : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long AssessmentId { get; set; }
 
     public short RuleId { get; set; }

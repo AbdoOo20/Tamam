@@ -16,8 +16,6 @@ public class OrderPublicLinkConfiguration : IEntityTypeConfiguration<OrderPublic
 
         builder.Property(x => x.Token).HasMaxLength(64).IsUnicode(false);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Order)
             .WithMany(x => x.PublicLinks)
             .HasForeignKey(x => x.OrderId)

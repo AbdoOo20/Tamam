@@ -24,8 +24,6 @@ public class MessageTemplateConfiguration : IEntityTypeConfiguration<MessageTemp
 
         builder.Property(x => x.ProviderTemplateName).HasMaxLength(100).IsUnicode(false);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasIndex(x => new { x.Code, x.Language, x.Channel })
             .HasDatabaseName("UQ_MessageTemplates")
             .IsUnique();

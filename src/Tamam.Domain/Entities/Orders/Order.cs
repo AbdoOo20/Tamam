@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class Order
+public class Order : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public long MerchantCustomerId { get; set; }
@@ -79,10 +79,6 @@ public class Order
     public DateTime PlacedAt { get; set; }
 
     public int? CreatedByUserId { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
 
     public byte[] RowVersion { get; set; } = [];
 

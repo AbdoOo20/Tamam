@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class RejectionReason
+public class RejectionReason : BaseEntity<RejectionReasonType>
 {
-    public RejectionReasonType Id { get; set; }
-
     public string Code { get; set; } = string.Empty;
 
     public string NameAr { get; set; } = string.Empty;

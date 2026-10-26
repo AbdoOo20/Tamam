@@ -22,8 +22,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(x => x.AdUrl).HasMaxLength(500);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Merchant)
             .WithMany(x => x.Products)
             .HasForeignKey(x => x.MerchantId)

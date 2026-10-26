@@ -22,8 +22,6 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 
         builder.Property(x => x.IpAddress).HasMaxLength(45).IsUnicode(false);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Merchant)
             .WithMany()
             .HasForeignKey(x => x.MerchantId)
