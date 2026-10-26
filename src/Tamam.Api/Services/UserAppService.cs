@@ -2,6 +2,8 @@ using System.Security.Claims;
 
 using Tamam.Application.Abstractions;
 
+using Tamam.Application.Exceptions;
+
 namespace Tamam.Api.Services;
 
 public class UserAppService(IHttpContextAccessor httpContextAccessor) : IUserAppService
@@ -16,9 +18,11 @@ public class UserAppService(IHttpContextAccessor httpContextAccessor) : IUserApp
 
     public string? Role => Principal?.FindFirst(ClaimTypes.Role)?.Value ?? Principal?.FindFirst("role")?.Value;
 
+    public string? IpAddress => httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+
     public int RequiredUserId => UserId ?? throw new UnauthorizedAccessException("The current user is not authenticated.");
 
-    public int RequiredMerchantId => MerchantId ?? throw new UnauthorizedAccessException("The current user does not belong to a merchant.");
+    public int RequiredMerchantId => MerchantId ?? throw new ForbiddenException("The current user does not belong to a merchant.");
 
     private int? ReadInt(string claimType)
     {

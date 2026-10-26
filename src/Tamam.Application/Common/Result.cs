@@ -40,6 +40,10 @@ public class Result
 
     public static Result Conflict(string? message = null) => new(ResultStatus.Conflict, message ?? "Conflict.", null);
 
+    public static Result Failure(ResultStatus status, string? message = null, IReadOnlyList<string>? errors = null) => new(status, message, errors);
+
+    public static Result Gone(string? message = null) => new(ResultStatus.Gone, message ?? "The resource is no longer available.", null);
+
     public static Result UnprocessableEntity(params string[] errors) => new(ResultStatus.UnprocessableEntity, "Validation failed.", errors);
 
     public static Result InternalServerError(string? message = null) => new(ResultStatus.InternalServerError, message ?? "An unexpected error occurred.", null);

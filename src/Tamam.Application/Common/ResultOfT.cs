@@ -25,6 +25,8 @@ public class Result<T> : Result
 
     public static new Result<T> Conflict(string? message = null) => new(ResultStatus.Conflict, default, message ?? "Conflict.", null);
 
+    public static new Result<T> Gone(string? message = null) => new(ResultStatus.Gone, default, message ?? "The resource is no longer available.", null);
+
     public static new Result<T> UnprocessableEntity(params string[] errors) => new(ResultStatus.UnprocessableEntity, default, "Validation failed.", errors);
 
     public static new Result<T> InternalServerError(string? message = null) => new(ResultStatus.InternalServerError, default, message ?? "An unexpected error occurred.", null);

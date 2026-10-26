@@ -10,6 +10,8 @@ public interface IUserAppService
 
     string? Role { get; }
 
+    string? IpAddress { get; }
+
     int RequiredUserId { get; }
 
     int RequiredMerchantId { get; }

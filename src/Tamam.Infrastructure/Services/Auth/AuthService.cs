@@ -24,6 +24,8 @@ using Tamam.Domain.Constants;
 
 using Tamam.Domain.Entities;
 
+using Tamam.Domain.Enums;
+
 namespace Tamam.Infrastructure.Services.Auth;
 
 public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, IOptions<JwtSettings> jwtOptions) : IAuthService
@@ -66,6 +68,28 @@ public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, 
             await unitOfWork.Repository<Merchant>().AddAsync(merchant, cancellationToken);
 
             await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var trialPlan = await unitOfWork.Repository<Plan>().FirstOrDefaultAsync(plan => plan.Code == "TRIAL" && plan.IsActive, cancellationToken);
+
+            if (trialPlan is not null)
+            {
+                var now = DateTime.UtcNow;
+
+                await unitOfWork.Repository<MerchantSubscription>().AddAsync(new MerchantSubscription
+                {
+                    MerchantId = merchant.Id,
+
+                    PlanId = trialPlan.Id,
+
+                    Status = SubscriptionStatus.Trial,
+
+                    StartedAt = now,
+
+                    TrialEndsAt = now.AddDays(14)
+                }, cancellationToken);
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+            }
 
             var user = new User
             {
