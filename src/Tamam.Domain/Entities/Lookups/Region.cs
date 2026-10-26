@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class Region
+public class Region : BaseEntity<int>
 {
-    public int Id { get; set; }
-
     public string CountryCode { get; set; } = string.Empty;
 
     public int? ParentRegionId { get; set; }

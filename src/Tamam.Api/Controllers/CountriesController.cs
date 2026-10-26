@@ -17,7 +17,7 @@ public class CountriesController(IUnitOfWork unitOfWork) : ControllerBase
     {
         var countries = await unitOfWork.Repository<Country>().ListAsync(cancellationToken: cancellationToken);
 
-        var result = countries.Select(country => new CountryDto(country.Code, country.NameAr, country.NameEn, country.PhoneCode, country.CurrencyCode)).ToList();
+        var result = countries.Select(country => new CountryDto(country.Id, country.NameAr, country.NameEn, country.PhoneCode, country.CurrencyCode)).ToList();
 
         return Ok(result);
     }

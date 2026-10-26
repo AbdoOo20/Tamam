@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class MessageTemplate
+public class MessageTemplate : BaseEntity<int>
 {
-    public int Id { get; set; }
-
     public string Code { get; set; } = string.Empty;
 
     public string Language { get; set; } = string.Empty;

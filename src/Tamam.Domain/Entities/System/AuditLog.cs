@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class AuditLog
+public class AuditLog : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int? MerchantId { get; set; }
 
     public int? UserId { get; set; }
@@ -19,8 +19,6 @@ public class AuditLog
     public string? NewValues { get; set; }
 
     public string? IpAddress { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Merchant? Merchant { get; set; }
 

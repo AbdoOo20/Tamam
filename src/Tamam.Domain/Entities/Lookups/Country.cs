@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class Country
+public class Country : BaseEntity<string>
 {
-    public string Code { get; set; } = string.Empty;
-
     public string NameAr { get; set; } = string.Empty;
 
     public string NameEn { get; set; } = string.Empty;

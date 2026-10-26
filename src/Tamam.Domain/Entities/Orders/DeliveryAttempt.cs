@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class DeliveryAttempt
+public class DeliveryAttempt : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long OrderId { get; set; }
 
     public byte AttemptNo { get; set; }

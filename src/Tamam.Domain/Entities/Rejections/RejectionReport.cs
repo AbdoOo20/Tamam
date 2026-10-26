@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class RejectionReport
+public class RejectionReport : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long OrderId { get; set; }
 
     public ReporterKind ReporterType { get; set; }
@@ -17,8 +17,6 @@ public class RejectionReport
     public string? Details { get; set; }
 
     public string? EvidenceUrl { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Order Order { get; set; } = null!;
 

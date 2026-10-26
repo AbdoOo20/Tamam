@@ -18,8 +18,6 @@ public class RejectionReportConfiguration : IEntityTypeConfiguration<RejectionRe
 
         builder.Property(x => x.EvidenceUrl).HasMaxLength(500);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Order)
             .WithMany(x => x.RejectionReports)
             .HasForeignKey(x => x.OrderId)

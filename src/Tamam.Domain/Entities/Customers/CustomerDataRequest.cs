@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class CustomerDataRequest
+public class CustomerDataRequest : BaseEntity<int>
 {
-    public int Id { get; set; }
-
     public long? CustomerId { get; set; }
 
     public DataRequestType Type { get; set; }

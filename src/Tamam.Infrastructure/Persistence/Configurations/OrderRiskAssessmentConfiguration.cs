@@ -19,8 +19,6 @@ public class OrderRiskAssessmentConfiguration : IEntityTypeConfiguration<OrderRi
 
         builder.Property(x => x.ModelVersion).HasMaxLength(20).IsUnicode(false);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Order)
             .WithMany(x => x.RiskAssessments)
             .HasForeignKey(x => x.OrderId)

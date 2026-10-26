@@ -16,8 +16,6 @@ public class OrderImportConfiguration : IEntityTypeConfiguration<OrderImport>
 
         builder.Property(x => x.FileName).HasMaxLength(260);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Merchant)
             .WithMany(x => x.Imports)
             .HasForeignKey(x => x.MerchantId)

@@ -61,8 +61,6 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(x => x.PlacedAt).HasDefaultValueSql("SYSUTCDATETIME()");
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.Property(x => x.RowVersion).IsRowVersion();
 
         builder.HasOne(x => x.Merchant)

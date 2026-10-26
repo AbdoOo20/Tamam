@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 using Tamam.Application.Abstractions;
 
+using Tamam.Domain.Common;
+
 namespace Tamam.Infrastructure.Persistence.Repositories;
 
 public class GenericRepository<TEntity>(TamamDbContext context) : IRepository<TEntity> where TEntity : class
@@ -24,7 +26,12 @@ public class GenericRepository<TEntity>(TamamDbContext context) : IRepository<TE
         return query;
     }
 
-    public ValueTask<TEntity?> GetByIdAsync(object id, CancellationToken cancellationToken = default) => dbSet.FindAsync(new object[] { id }, cancellationToken);
+    public async ValueTask<TEntity?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+    {
+        var entity = await dbSet.FindAsync(new object[] { id }, cancellationToken);
+
+        return entity is ISoftDeletable { IsDeleted: true } ? null : entity;
+    }
 
     public Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default) => Entities.FirstOrDefaultAsync(predicate, cancellationToken);
 

@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class MerchantCustomer
+public class MerchantCustomer : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public long CustomerId { get; set; }
@@ -17,8 +17,6 @@ public class MerchantCustomer
     public bool? HasWhatsApp { get; set; }
 
     public string? Notes { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Merchant Merchant { get; set; } = null!;
 

@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class ConfirmationRequest
+public class ConfirmationRequest : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long OrderId { get; set; }
 
     public byte AttemptNo { get; set; } = 1;
@@ -25,8 +25,6 @@ public class ConfirmationRequest
     public string? ResponseNote { get; set; }
 
     public decimal Cost { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Order Order { get; set; } = null!;
 

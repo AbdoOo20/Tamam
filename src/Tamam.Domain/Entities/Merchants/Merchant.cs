@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class Merchant
+public class Merchant : BaseEntity<int>
 {
-    public int Id { get; set; }
-
     public string BusinessName { get; set; } = string.Empty;
 
     public string OwnerName { get; set; } = string.Empty;
@@ -29,12 +29,6 @@ public class Merchant
     public bool ShadowMode { get; set; } = true;
 
     public byte[]? ApiKeyHash { get; set; }
-
-    public bool IsDeleted { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public DateTime? UpdatedAt { get; set; }
 
     public Country Country { get; set; } = null!;
 

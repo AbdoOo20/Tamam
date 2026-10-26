@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class MessageLog
+public class MessageLog : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long? OrderId { get; set; }
 
     public long? ConfirmationRequestId { get; set; }
@@ -25,8 +25,6 @@ public class MessageLog
     public string? ErrorCode { get; set; }
 
     public decimal Cost { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Order? Order { get; set; }
 

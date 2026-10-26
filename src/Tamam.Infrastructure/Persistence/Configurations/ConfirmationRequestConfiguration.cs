@@ -18,8 +18,6 @@ public class ConfirmationRequestConfiguration : IEntityTypeConfiguration<Confirm
 
         builder.Property(x => x.Cost).HasPrecision(10, 4);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Order)
             .WithMany(x => x.ConfirmationRequests)
             .HasForeignKey(x => x.OrderId)

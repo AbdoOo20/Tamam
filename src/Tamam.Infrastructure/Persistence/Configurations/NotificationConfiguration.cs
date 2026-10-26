@@ -20,8 +20,6 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 
         builder.Property(x => x.Body).HasMaxLength(1000);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Merchant)
             .WithMany()
             .HasForeignKey(x => x.MerchantId)

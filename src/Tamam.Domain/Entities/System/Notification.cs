@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class Notification
+public class Notification : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public int? UserId { get; set; }
@@ -17,8 +17,6 @@ public class Notification
     public long? RelatedOrderId { get; set; }
 
     public bool IsRead { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Merchant Merchant { get; set; } = null!;
 

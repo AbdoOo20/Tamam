@@ -34,8 +34,6 @@ public class MerchantConfiguration : IEntityTypeConfiguration<Merchant>
 
         builder.Property(x => x.ApiKeyHash).HasColumnType("binary(32)");
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Country)
             .WithMany()
             .HasForeignKey(x => x.CountryCode)

@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class MerchantConsent
+public class MerchantConsent : BaseEntity<int>
 {
-    public int Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public string TermsVersion { get; set; } = string.Empty;

@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class UsageRecord
+public class UsageRecord : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public long? OrderId { get; set; }

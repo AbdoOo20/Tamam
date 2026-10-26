@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class OrderItem
+public class OrderItem : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public long OrderId { get; set; }
 
     public long? ProductId { get; set; }

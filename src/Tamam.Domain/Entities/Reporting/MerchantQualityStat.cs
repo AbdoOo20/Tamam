@@ -1,9 +1,9 @@
+using Tamam.Domain.Common;
+
 namespace Tamam.Domain.Entities;
 
-public class MerchantQualityStat
+public class MerchantQualityStat : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public DateOnly PeriodMonth { get; set; }

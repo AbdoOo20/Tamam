@@ -15,9 +15,9 @@ public class OrderOutcomeConfiguration : IEntityTypeConfiguration<OrderOutcome>
             table.HasCheckConstraint("CK_OrderOutcomes_Weight", "[CustomerFaultWeight] BETWEEN 0 AND 1");
         });
 
-        builder.HasKey(x => x.OrderId);
+        builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.OrderId).ValueGeneratedNever();
+        builder.Property(x => x.Id).HasColumnName("OrderId").ValueGeneratedNever();
 
         builder.Property(x => x.CustomerFaultWeight).HasPrecision(3, 2);
 
@@ -31,11 +31,9 @@ public class OrderOutcomeConfiguration : IEntityTypeConfiguration<OrderOutcome>
             .HasPrecision(18, 2)
             .HasComputedColumnSql("[OutboundShippingCost] + [ReturnShippingCost] + [OtherLoss]", stored: true);
 
-        builder.Property(x => x.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
-
         builder.HasOne(x => x.Order)
             .WithOne(x => x.Outcome)
-            .HasForeignKey<OrderOutcome>(x => x.OrderId)
+            .HasForeignKey<OrderOutcome>(x => x.Id)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(x => x.FinalReason)

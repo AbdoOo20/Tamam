@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class OrderOutcome
+public class OrderOutcome : BaseEntity<long>
 {
-    public long OrderId { get; set; }
-
     public OrderFinalResult FinalResult { get; set; }
 
     public RejectionReasonType? FinalReasonId { get; set; }
@@ -27,8 +27,6 @@ public class OrderOutcome
     public decimal LossAmount { get; private set; }
 
     public DateTime? ResolvedAt { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 
     public Order Order { get; set; } = null!;
 

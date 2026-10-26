@@ -1,11 +1,11 @@
+using Tamam.Domain.Common;
+
 using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class OrderImport
+public class OrderImport : BaseEntity<long>
 {
-    public long Id { get; set; }
-
     public int MerchantId { get; set; }
 
     public int? UploadedByUserId { get; set; }
@@ -23,8 +23,6 @@ public class OrderImport
     public string? ErrorReport { get; set; }
 
     public ImportStatus Status { get; set; } = ImportStatus.Processing;
-
-    public DateTime CreatedAt { get; set; }
 
     public DateTime? CompletedAt { get; set; }
 
