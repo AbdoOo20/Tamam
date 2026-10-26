@@ -16,6 +16,8 @@ public enum ResultStatus
 
     Conflict = 409,
 
+    Gone = 410,
+
     UnprocessableEntity = 422,
 
     InternalServerError = 500

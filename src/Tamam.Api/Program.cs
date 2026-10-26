@@ -1,6 +1,6 @@
 using Tamam.Api.Extensions;
 
-using Tamam.Api.Middleware;
+using Tamam.Api.ExceptionHandling;
 
 using Tamam.Api.OpenApi;
 
@@ -24,9 +24,15 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
+builder.Services.Configure<PublicLinksSettings>(builder.Configuration.GetSection(PublicLinksSettings.SectionName));
+
 builder.Services.AddControllers();
 
 builder.Services.AddApiResponses();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddProblemDetails();
 
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 
@@ -44,14 +50,16 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
+app.UseApiStatusCodePages();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
     app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Tamam API v1"));
 }
-
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
