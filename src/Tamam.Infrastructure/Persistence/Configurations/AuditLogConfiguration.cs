@@ -32,6 +32,10 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasIndex(x => new { x.MerchantId, x.CreatedAt })
+
+            .HasDatabaseName("IX_AuditLogs_Merchant_Created");
+
         builder.HasIndex(x => new { x.EntityName, x.EntityId })
             .HasDatabaseName("IX_AuditLogs_Entity");
     }

@@ -22,27 +22,39 @@ public class AdminMerchantService(IUnitOfWork unitOfWork, IBillingService billin
 {
     public async Task<Result<AdminOverviewDto>> GetOverviewAsync(CancellationToken cancellationToken = default)
     {
-        var merchants = unitOfWork.Repository<Merchant>().Query();
+        var merchantsByStatus = await unitOfWork.Repository<Merchant>().Query()
+            .GroupBy(merchant => merchant.Status)
 
-        var merchantCount = await merchants.CountAsync(cancellationToken);
+            .Select(group => new { Status = group.Key, Count = group.Count() })
 
-        var active = await merchants.CountAsync(merchant => merchant.Status == MerchantStatus.Active, cancellationToken);
+            .ToListAsync(cancellationToken);
 
-        var trial = await merchants.CountAsync(merchant => merchant.Status == MerchantStatus.Trial, cancellationToken);
+        var merchantCount = merchantsByStatus.Sum(item => item.Count);
 
-        var suspended = await merchants.CountAsync(merchant => merchant.Status == MerchantStatus.Suspended, cancellationToken);
+        var active = merchantsByStatus.Where(item => item.Status == MerchantStatus.Active).Sum(item => item.Count);
+
+        var trial = merchantsByStatus.Where(item => item.Status == MerchantStatus.Trial).Sum(item => item.Count);
+
+        var suspended = merchantsByStatus.Where(item => item.Status == MerchantStatus.Suspended).Sum(item => item.Count);
 
         var totalOrders = await unitOfWork.Repository<Order>().Query().CountAsync(cancellationToken);
 
         var since = DateTime.UtcNow.AddDays(-30);
 
-        var recent = unitOfWork.Repository<Order>().Query().Where(order => !order.IsHistorical && order.PlacedAt >= since);
+        var recentByStatus = await unitOfWork.Repository<Order>().Query()
+            .Where(order => !order.IsHistorical && order.PlacedAt >= since)
 
-        var recentCount = await recent.CountAsync(cancellationToken);
+            .GroupBy(order => order.StatusId)
 
-        var delivered = await recent.CountAsync(order => order.StatusId == OrderStatusType.Delivered, cancellationToken);
+            .Select(group => new { StatusId = group.Key, Count = group.Count() })
 
-        var refused = await recent.CountAsync(order => order.StatusId == OrderStatusType.Refused || order.StatusId == OrderStatusType.Returned, cancellationToken);
+            .ToListAsync(cancellationToken);
+
+        var recentCount = recentByStatus.Sum(item => item.Count);
+
+        var delivered = recentByStatus.Where(item => item.StatusId == OrderStatusType.Delivered).Sum(item => item.Count);
+
+        var refused = recentByStatus.Where(item => item.StatusId == OrderStatusType.Refused || item.StatusId == OrderStatusType.Returned).Sum(item => item.Count);
 
         var openRequests = await unitOfWork.Repository<CustomerDataRequest>().CountAsync(request => request.Status == DataRequestStatus.Open, cancellationToken);
 
@@ -71,27 +83,31 @@ public class AdminMerchantService(IUnitOfWork unitOfWork, IBillingService billin
 
         var page = await merchants
             .OrderByDescending(merchant => merchant.CreatedAt)
-            .Select(merchant => new AdminMerchantListItemDto(
-            merchant.Id,
 
-            merchant.BusinessName,
+            .ToPagedResultAsync(
+                source => source.Select(merchant => new AdminMerchantListItemDto(
+                    merchant.Id,
 
-            merchant.OwnerName,
+                    merchant.BusinessName,
 
-            merchant.Phone,
+                    merchant.OwnerName,
 
-            merchant.Email,
+                    merchant.Phone,
 
-            merchant.CountryCode,
+                    merchant.Email,
 
-            merchant.Status,
+                    merchant.CountryCode,
 
-            merchant.ShadowMode,
+                    merchant.Status,
 
-            merchant.Orders.Count,
+                    merchant.ShadowMode,
 
-            merchant.CreatedAt))
-                .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
+                    merchant.Orders.Count,
+
+                    merchant.CreatedAt)),
+                query.Page,
+                query.PageSize,
+                cancellationToken);
 
         return Result<PagedResult<AdminMerchantListItemDto>>.Ok(page);
     }

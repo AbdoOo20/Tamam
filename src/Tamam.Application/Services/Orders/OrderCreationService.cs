@@ -33,6 +33,8 @@ public class OrderCreationService(
 
     IOrderOutcomeService outcomes) : IOrderCreationService
     {
+        // One plan price lookup per merchant per request (an import creates hundreds of orders in one scope).
+        private readonly Dictionary<int, decimal> unitCosts = [];
         public async Task<Result<long>> CreateAsync(CreateOrderRequest request, Merchant merchant, string phoneCode, long? importId, OrderSource source, bool isHistorical, CancellationToken cancellationToken = default)
         {
             var phone = PhoneHelper.Normalize(request.RecipientPhone, phoneCode);
@@ -241,11 +243,7 @@ public class OrderCreationService(
         {
             await confirmations.AttachNewConfirmationAsync(order, order.Items, merchant, 1, cancellationToken);
 
-            var unitCost = await unitOfWork.Repository<MerchantSubscription>().Query()
-                .Where(subscription => subscription.MerchantId == merchant.Id)
-                .OrderByDescending(subscription => subscription.StartedAt)
-                .Select(subscription => subscription.Plan.PricePerCheckedOrder)
-                .FirstOrDefaultAsync(cancellationToken);
+            var unitCost = await UnitCostAsync(merchant.Id, cancellationToken);
 
             await unitOfWork.Repository<UsageRecord>().AddAsync(new UsageRecord
             {
@@ -332,5 +330,24 @@ public class OrderCreationService(
         }
 
         return $"ORD-{Guid.NewGuid():N}"[..20];
+    }
+
+    private async Task<decimal> UnitCostAsync(int merchantId, CancellationToken cancellationToken)
+    {
+        if (!unitCosts.TryGetValue(merchantId, out var unitCost))
+        {
+            unitCost = await unitOfWork.Repository<MerchantSubscription>().Query()
+                .Where(subscription => subscription.MerchantId == merchantId)
+
+                .OrderByDescending(subscription => subscription.StartedAt)
+
+                .Select(subscription => subscription.Plan.PricePerCheckedOrder)
+
+                .FirstOrDefaultAsync(cancellationToken);
+
+            unitCosts[merchantId] = unitCost;
+        }
+
+        return unitCost;
     }
 }
