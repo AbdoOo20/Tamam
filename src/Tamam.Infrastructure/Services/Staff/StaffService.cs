@@ -28,8 +28,13 @@ public class StaffService(TamamDbContext context, UserManager<User> userManager,
             .AsNoTracking()
             .Where(user => user.MerchantId == merchantId)
             .Join(context.UserRoles, user => user.Id, userRole => userRole.UserId, (user, userRole) => new { user, userRole.RoleId })
-            .Join(context.Roles, item => item.RoleId, role => role.Id, (item, role) => new StaffDto(item.user.Id, item.user.FullName, item.user.Email!, item.user.PhoneNumber, role.Name!, item.user.IsActive, item.user.LastLoginAt))
-            .OrderBy(dto => dto.FullName)
+
+            .Join(context.Roles, item => item.RoleId, role => role.Id, (item, role) => new { item.user, RoleName = role.Name })
+
+            .OrderBy(item => item.user.FullName)
+
+            .Select(item => new StaffDto(item.user.Id, item.user.FullName, item.user.Email!, item.user.PhoneNumber, item.RoleName!, item.user.IsActive, item.user.LastLoginAt))
+
             .ToListAsync(cancellationToken);
 
         return Result<IReadOnlyList<StaffDto>>.Ok(staff);
