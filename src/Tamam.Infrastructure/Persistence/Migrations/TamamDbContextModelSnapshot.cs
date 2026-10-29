@@ -186,12 +186,13 @@ namespace Tamam.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MerchantId");
-
                     b.HasIndex("UserId");
 
                     b.HasIndex("EntityName", "EntityId")
                         .HasDatabaseName("IX_AuditLogs_Entity");
+
+                    b.HasIndex("MerchantId", "CreatedAt")
+                        .HasDatabaseName("IX_AuditLogs_Merchant_Created");
 
                     b.ToTable("AuditLogs", (string)null);
                 });
@@ -616,6 +617,9 @@ namespace Tamam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ProcessedByUserId");
 
+                    b.HasIndex("Status", "RequestedAt")
+                        .HasDatabaseName("IX_CustomerDataRequests_Status");
+
                     b.ToTable("CustomerDataRequests", (string)null);
                 });
 
@@ -926,6 +930,11 @@ namespace Tamam.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .IsUnicode(false)
                         .HasColumnType("varchar(20)");
+
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1480,6 +1489,11 @@ namespace Tamam.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<DateTime?>("ShippedAt")
                         .HasColumnType("datetime2");
@@ -2322,6 +2336,11 @@ namespace Tamam.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<string>("Sku")
                         .HasMaxLength(100)
