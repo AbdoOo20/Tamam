@@ -56,6 +56,8 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddApiRateLimiting();
 
+builder.Services.AddFrontendCors(builder.Configuration);
+
 builder.Services.AddHostedService<MaintenanceWorker>();
 
 var app = builder.Build();
@@ -74,6 +76,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(CorsExtensions.PolicyName);
 
 app.UseRateLimiter();
 
