@@ -18,7 +18,9 @@ public static class CorsExtensions
 
                         .AllowAnyHeader()
 
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+
+                        .AllowCredentials();
                 }
             });
         });

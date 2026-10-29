@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 
 using Tamam.Api.Authentication;
 
+using Tamam.Api.Hubs;
+
 using Tamam.Application.Common;
 
 using Tamam.Application.Settings;
@@ -49,6 +51,18 @@ public static class AuthenticationExtensions
 
             options.Events = new JwtBearerEvents
             {
+                OnMessageReceived = context =>
+                {
+                    var token = context.Request.Query["access_token"];
+
+                    if (!string.IsNullOrEmpty(token) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                },
+
                 OnChallenge = async context =>
                 {
                     context.HandleResponse();
