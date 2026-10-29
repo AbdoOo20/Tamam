@@ -15,6 +15,8 @@ namespace Tamam.Api.Controllers;
 [Authorize]
 public class BillingController(IBillingService billingService) : ApiControllerBase
 {
+    [AllowAnonymous]
+
     [HttpGet("plans")]
     public async Task<ActionResult<Result<IReadOnlyList<PlanDto>>>> GetPlans(CancellationToken cancellationToken)
     {
