@@ -14,6 +14,11 @@ public class RiskScoringService(IUnitOfWork unitOfWork) : IRiskScoringService
 {
     private const string ModelVersion = "rules-v1";
 
+    // The service is scoped, so these live for one request (or one whole import) instead of being re-read for every order.
+    private Dictionary<string, RiskRule>? activeRules;
+
+    private readonly Dictionary<int, bool> sharesOutcomes = [];
+
     private static readonly Dictionary<string, int> UtcOffsetHours = new()
     {
         ["EG"] = 2,
@@ -41,7 +46,7 @@ public class RiskScoringService(IUnitOfWork unitOfWork) : IRiskScoringService
 
     public async Task<OrderRiskAssessment> EvaluateAsync(RiskInput input, CancellationToken cancellationToken = default)
     {
-        var rules = (await unitOfWork.Repository<RiskRule>().ListAsync(rule => rule.IsActive, cancellationToken)).ToDictionary(rule => rule.Code);
+        var rules = activeRules ??= (await unitOfWork.Repository<RiskRule>().ListAsync(rule => rule.IsActive, cancellationToken)).ToDictionary(rule => rule.Code);
 
         var triggered = new List<RiskRule>();
 
@@ -86,11 +91,18 @@ public class RiskScoringService(IUnitOfWork unitOfWork) : IRiskScoringService
         {
             var history = merchantOrders.Where(order => order.MerchantCustomerId == merchantCustomerId);
 
-            previousOrders = await history.CountAsync(cancellationToken);
+            var byStatus = await history
+                .GroupBy(order => order.StatusId)
 
-            delivered = await history.CountAsync(order => order.StatusId == OrderStatusType.Delivered, cancellationToken);
+                .Select(group => new { StatusId = group.Key, Count = group.Count() })
 
-            refused = await history.CountAsync(order => order.StatusId == OrderStatusType.Refused, cancellationToken);
+                .ToListAsync(cancellationToken);
+
+            previousOrders = byStatus.Sum(item => item.Count);
+
+            delivered = byStatus.Where(item => item.StatusId == OrderStatusType.Delivered).Sum(item => item.Count);
+
+            refused = byStatus.Where(item => item.StatusId == OrderStatusType.Refused).Sum(item => item.Count);
 
             noResponse = await unitOfWork.Repository<ConfirmationRequest>().AnyAsync(request => request.Order.MerchantCustomerId == merchantCustomerId && request.Status == ConfirmationStatus.NoResponse, cancellationToken);
 
@@ -108,7 +120,7 @@ public class RiskScoringService(IUnitOfWork unitOfWork) : IRiskScoringService
 
         var networkRefusals = false;
 
-        if (input.CustomerId is { } customerId && await unitOfWork.Repository<MerchantConsent>().AnyAsync(consent => consent.MerchantId == input.MerchantId && consent.ShareOutcomesToNetwork, cancellationToken))
+        if (input.CustomerId is { } customerId && await SharesOutcomesAsync(input.MerchantId, cancellationToken))
         {
             var profile = await unitOfWork.Repository<CustomerRiskProfile>().GetByIdAsync(customerId, cancellationToken);
 
@@ -169,5 +181,17 @@ public class RiskScoringService(IUnitOfWork unitOfWork) : IRiskScoringService
         }
 
         return assessment;
+    }
+
+    private async Task<bool> SharesOutcomesAsync(int merchantId, CancellationToken cancellationToken)
+    {
+        if (!sharesOutcomes.TryGetValue(merchantId, out var shares))
+        {
+            shares = await unitOfWork.Repository<MerchantConsent>().AnyAsync(consent => consent.MerchantId == merchantId && consent.ShareOutcomesToNetwork, cancellationToken);
+
+            sharesOutcomes[merchantId] = shares;
+        }
+
+        return shares;
     }
 }

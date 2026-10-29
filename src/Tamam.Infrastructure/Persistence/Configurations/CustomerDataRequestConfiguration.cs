@@ -16,6 +16,10 @@ public class CustomerDataRequestConfiguration : IEntityTypeConfiguration<Custome
 
         builder.Property(x => x.RequestedAt).HasDefaultValueSql("SYSUTCDATETIME()");
 
+        builder.HasIndex(x => new { x.Status, x.RequestedAt })
+
+            .HasDatabaseName("IX_CustomerDataRequests_Status");
+
         builder.HasOne(x => x.Customer)
             .WithMany()
             .HasForeignKey(x => x.CustomerId)

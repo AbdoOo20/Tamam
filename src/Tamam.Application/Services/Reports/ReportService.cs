@@ -26,7 +26,7 @@ public class ReportService(IUnitOfWork unitOfWork, IUserAppService userAppServic
 
         var orders = unitOfWork.Repository<Order>().Query().Where(order => order.MerchantId == merchantId && !order.IsHistorical && order.PlacedAt >= start && order.PlacedAt < end);
 
-        var statusCounts = await orders.GroupBy(order => order.StatusId).Select(group => new { StatusId = group.Key, Count = group.Count() }).ToListAsync(cancellationToken);
+        var statusCounts = await orders.GroupBy(order => order.StatusId).Select(group => new { StatusId = group.Key, Count = group.Count(), Revenue = group.Sum(order => order.TotalAmount) }).ToListAsync(cancellationToken);
 
         var statusNames = await unitOfWork.Repository<OrderStatus>().Query().ToDictionaryAsync(status => status.Id, status => status.NameAr, cancellationToken);
 
@@ -34,17 +34,27 @@ public class ReportService(IUnitOfWork unitOfWork, IUserAppService userAppServic
 
         var perDay = await orders.GroupBy(order => order.PlacedAt.Date).Select(group => new { Date = group.Key, Count = group.Count() }).OrderBy(item => item.Date).ToListAsync(cancellationToken);
 
-        var revenue = await orders.Where(order => order.StatusId == OrderStatusType.Delivered).SumAsync(order => (decimal?)order.TotalAmount, cancellationToken) ?? 0m;
+        var revenue = statusCounts.Where(item => item.StatusId == OrderStatusType.Delivered).Sum(item => item.Revenue);
 
         var outcomes = unitOfWork.Repository<OrderOutcome>().Query().Where(outcome => outcome.Order.MerchantId == merchantId && !outcome.Order.IsHistorical && outcome.Order.PlacedAt >= start && outcome.Order.PlacedAt < end);
 
-        var attributionCounts = await outcomes
-            .Where(outcome => outcome.FinalResult == OrderFinalResult.Refused)
-            .GroupBy(outcome => outcome.Attribution)
-            .Select(group => new { Attribution = group.Key, Count = group.Count() })
+        var outcomeRows = await outcomes
+            .GroupBy(outcome => new { outcome.FinalResult, outcome.Attribution })
+
+            .Select(group => new { group.Key.FinalResult, group.Key.Attribution, Count = group.Count(), Loss = group.Sum(outcome => outcome.LossAmount) })
+
             .ToListAsync(cancellationToken);
 
-        var totalLoss = await outcomes.SumAsync(outcome => (decimal?)outcome.LossAmount, cancellationToken) ?? 0m;
+        var attributionCounts = outcomeRows
+            .Where(row => row.FinalResult == OrderFinalResult.Refused)
+
+            .GroupBy(row => row.Attribution)
+
+            .Select(group => new { Attribution = group.Key, Count = group.Sum(row => row.Count) })
+
+            .ToList();
+
+        var totalLoss = outcomeRows.Sum(row => row.Loss);
 
         int Count(params OrderStatusType[] statuses) => statusCounts.Where(item => statuses.Contains(item.StatusId)).Sum(item => item.Count);
 
@@ -102,18 +112,26 @@ public class ReportService(IUnitOfWork unitOfWork, IUserAppService userAppServic
 
         var start = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-(safeMonths - 1));
 
-        var all = unitOfWork.Repository<OrderOutcome>().Query().Where(outcome => outcome.Order.PlacedAt >= start && !outcome.Order.IsHistorical);
+        var mine = await Group(
+            unitOfWork.Repository<OrderOutcome>().Query().Where(outcome => outcome.Order.MerchantId == merchantId && outcome.Order.PlacedAt >= start && !outcome.Order.IsHistorical),
+            cancellationToken);
 
-        var mine = await Group(all.Where(outcome => outcome.Order.MerchantId == merchantId), cancellationToken);
+        var firstPeriod = DateOnly.FromDateTime(start);
 
-        var network = await Group(all, cancellationToken);
+        // The platform-wide rate is stored on this merchant's monthly snapshot by the maintenance job, so there is no need to scan every merchant's outcomes here.
+        var networkRates = await unitOfWork.Repository<MerchantQualityStat>().Query()
+            .Where(stat => stat.MerchantId == merchantId && stat.PeriodMonth >= firstPeriod)
+
+            .Select(stat => new { stat.PeriodMonth, stat.NetworkAvgComplaintRate })
+
+            .ToListAsync(cancellationToken);
 
         IReadOnlyList<QualityMonthDto> result = mine
             .OrderBy(row => row.Year)
             .ThenBy(row => row.Month)
             .Select(row =>
         {
-            var networkRow = network.FirstOrDefault(item => item.Year == row.Year && item.Month == row.Month);
+            var networkRate = networkRates.FirstOrDefault(item => item.PeriodMonth.Year == row.Year && item.PeriodMonth.Month == row.Month)?.NetworkAvgComplaintRate;
 
             return new QualityMonthDto(
                 row.Year,
@@ -140,7 +158,7 @@ public class ReportService(IUnitOfWork unitOfWork, IUserAppService userAppServic
 
                 Rate(row.RefusedMerchant, row.Total),
 
-                networkRow is null ? 0m : Rate(networkRow.RefusedMerchant, networkRow.Total));
+                networkRate is null ? 0m : Math.Round(networkRate.Value, 1));
         })
             .ToList();
 

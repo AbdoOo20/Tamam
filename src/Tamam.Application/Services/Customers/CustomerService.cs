@@ -27,8 +27,10 @@ public class CustomerService(IUnitOfWork unitOfWork, IUserAppService userAppServ
             customers = customers.Where(customer => customer.FullName.Contains(term) || customer.PhoneE164.Contains(term));
         }
 
-        var page = await Project(customers.OrderByDescending(customer => customer.Orders.Max(order => (DateTime?)order.PlacedAt)))
-            .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
+        var page = await customers
+            .OrderByDescending(customer => customer.Orders.Max(order => (DateTime?)order.PlacedAt))
+
+            .ToPagedResultAsync(Project, query.Page, query.PageSize, cancellationToken);
 
         if (await SharesNetworkAsync(merchantId, cancellationToken))
         {
