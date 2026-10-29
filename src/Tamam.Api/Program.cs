@@ -2,6 +2,8 @@ using Tamam.Api.BackgroundServices;
 
 using Tamam.Api.Extensions;
 
+using Tamam.Api.Hubs;
+
 using Tamam.Api.ExceptionHandling;
 
 using Tamam.Api.OpenApi;
@@ -46,6 +48,10 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IUserAppService, UserAppService>();
 
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<INotificationPublisher, SignalRNotificationPublisher>();
+
 builder.Services.AddApplication();
 
 builder.Services.AddInfrastructure(connectionString);
@@ -86,5 +92,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<NotificationsHub>(NotificationsHub.Route);
 
 app.Run();
