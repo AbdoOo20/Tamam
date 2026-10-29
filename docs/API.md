@@ -91,6 +91,14 @@ The first admin is created at startup from the `PlatformAdmin` configuration sec
 | GET | `/api/admin/audit-logs?merchantId=` | audit log across merchants |
 | POST | `/api/admin/quality/recalculate` | `{ year?, month? }` rebuild the monthly quality snapshots |
 
+## Real-time notifications (SignalR)
+
+- Hub: `/hubs/notifications` (needs a JWT; browsers pass it as `?access_token=<jwt>` because WebSockets cannot send headers).
+- On connect the user joins `merchant:{merchantId}` and `user:{userId}`.
+- Event `notification` carries a `NotificationDto` (`id, type, title, body, relatedOrderId, isRead, createdAt`). It is sent right after a `Notification` row is saved: to the user group when `UserId` is set, otherwise to the whole merchant group.
+- `GET /api/notifications` and `/unread-count` stay the source of truth; the client re-reads them after a reconnect.
+- CORS must list the frontend origin in `Cors:AllowedOrigins` (the policy allows credentials).
+
 ## Others
 `GET /api/messages/templates` · `GET /api/notifications`, `/unread-count`, `POST /{id}/read`, `/read-all` · `GET /api/reports/dashboard?from=&to=` · `GET /api/reports/quality?months=6`
 

@@ -12,13 +12,15 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 using Tamam.Application.Abstractions;
 
+using Tamam.Application.DTOs.Notifications;
+
 using Tamam.Domain.Common;
 
 using Tamam.Domain.Entities;
 
 namespace Tamam.Infrastructure.Persistence;
 
-public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppService userAppService) : IdentityDbContext<User, Role, int>(options)
+public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppService userAppService, INotificationPublisher notificationPublisher) : IdentityDbContext<User, Role, int>(options)
 {
     public DbSet<Country> Countries => Set<Country>();
 
@@ -114,6 +116,8 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
 
         var pending = CollectAuditTrail();
 
+        var newNotifications = ChangeTracker.Entries<Notification>().Where(entry => entry.State == EntityState.Added).Select(entry => entry.Entity).ToList();
+
         await using var transaction = pending.Count > 0 && Database.CurrentTransaction is null ? await Database.BeginTransactionAsync(cancellationToken) : null;
 
         var affected = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -130,6 +134,15 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
         if (transaction is not null)
         {
             await transaction.CommitAsync(cancellationToken);
+        }
+
+        if (newNotifications.Count > 0)
+        {
+            var pushes = newNotifications
+                .Select(item => new NotificationPush(item.MerchantId, item.UserId, new NotificationDto(item.Id, item.Type, item.Title, item.Body, item.RelatedOrderId, item.IsRead, item.CreatedAt)))
+                .ToList();
+
+            await notificationPublisher.PublishAsync(pushes, cancellationToken);
         }
 
         return affected;
