@@ -1532,7 +1532,8 @@ namespace Tamam.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("MerchantId", "OrderNo")
                         .IsUnique()
-                        .HasDatabaseName("UQ_Orders_Merchant_OrderNo");
+                        .HasDatabaseName("UQ_Orders_Merchant_OrderNo")
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.HasIndex("MerchantId", "PlacedAt")
                         .IsDescending(false, true)
@@ -2268,6 +2269,19 @@ namespace Tamam.Infrastructure.Persistence.Migrations
                             MonthlyFee = 0m,
                             NameAr = "تجريبي",
                             PricePerCheckedOrder = 0m
+                        },
+                        new
+                        {
+                            Id = (short)2,
+                            Code = "PAYG",
+                            CreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrencyCode = "USD",
+                            IncludedOrders = 0,
+                            IsActive = true,
+                            IsDeleted = false,
+                            MonthlyFee = 0m,
+                            NameAr = "الدفع حسب الاستخدام",
+                            PricePerCheckedOrder = 0.05m
                         });
                 });
 
@@ -2324,7 +2338,7 @@ namespace Tamam.Infrastructure.Persistence.Migrations
                     b.HasIndex("MerchantId", "Sku")
                         .IsUnique()
                         .HasDatabaseName("UX_Products_Merchant_Sku")
-                        .HasFilter("[Sku] IS NOT NULL");
+                        .HasFilter("[Sku] IS NOT NULL AND [IsDeleted] = 0");
 
                     b.ToTable("Products", (string)null);
                 });
