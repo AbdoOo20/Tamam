@@ -18,6 +18,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(x => x.Name).HasMaxLength(250);
 
+        builder.Property(x => x.SearchText).HasMaxLength(400);
+
         builder.Property(x => x.DefaultPrice).HasPrecision(18, 2);
 
         builder.Property(x => x.AdUrl).HasMaxLength(500);

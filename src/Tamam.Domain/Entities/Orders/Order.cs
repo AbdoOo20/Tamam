@@ -4,7 +4,7 @@ using Tamam.Domain.Enums;
 
 namespace Tamam.Domain.Entities;
 
-public class Order : BaseEntity<long>
+public class Order : BaseEntity<long>, ISearchable
 {
     public int MerchantId { get; set; }
 
@@ -23,6 +23,8 @@ public class Order : BaseEntity<long>
     public string RecipientName { get; set; } = string.Empty;
 
     public string RecipientPhoneE164 { get; set; } = string.Empty;
+
+    public string SearchText { get; set; } = string.Empty;
 
     public string? AltPhoneE164 { get; set; }
 
@@ -117,4 +119,6 @@ public class Order : BaseEntity<long>
     public OrderOutcome? Outcome { get; set; }
 
     public ICollection<OrderRiskAssessment> RiskAssessments { get; set; } = [];
+
+    public string BuildSearchText() => ArabicSearch.Build(OrderNo, RecipientName, RecipientPhoneE164);
 }

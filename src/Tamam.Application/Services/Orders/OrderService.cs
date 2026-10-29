@@ -111,9 +111,7 @@ public class OrderService(
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var term = query.Search.Trim();
-
-            orders = orders.Where(order => order.OrderNo.Contains(term) || order.RecipientName.Contains(term) || order.RecipientPhoneE164.Contains(term));
+            orders = orders.WhereMatchesSearch(query.Search);
         }
 
         var page = await orders
