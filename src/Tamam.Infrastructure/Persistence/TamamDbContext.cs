@@ -192,6 +192,16 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
 
         foreach (var entry in ChangeTracker.Entries())
         {
+            if (entry.Entity is ISearchable searchable && entry.State is EntityState.Added or EntityState.Modified)
+            {
+                var searchText = searchable.BuildSearchText();
+
+                if (searchable.SearchText != searchText)
+                {
+                    searchable.SearchText = searchText;
+                }
+            }
+
             if (entry is { State: EntityState.Deleted, Entity: ISoftDeletable softDeletable })
             {
                 entry.State = EntityState.Modified;
@@ -213,6 +223,11 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
 
             else if (entry.State == EntityState.Modified)
             {
+                if (OnlySearchTextChanged(entry))
+                {
+                    continue;
+                }
+
                 entry.Property(nameof(IAuditable.CreatedAt)).IsModified = false;
 
                 entry.Property(nameof(IAuditable.CreatedBy)).IsModified = false;
@@ -251,8 +266,8 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
     ];
 
     private static readonly HashSet<string> IgnoredAuditProperties =
-
     [
+        nameof(ISearchable.SearchText),
 
     nameof(IAuditable.CreatedAt),
 
@@ -360,6 +375,8 @@ public class TamamDbContext(DbContextOptions<TamamDbContext> options, IUserAppSe
 
         return pending;
     }
+
+    private static bool OnlySearchTextChanged(EntityEntry entry) => entry.Entity is ISearchable && entry.Properties.Where(property => property.IsModified).All(property => property.Metadata.Name == nameof(ISearchable.SearchText));
 
     private static object? AuditValue(string propertyName, object? value) => RedactedAuditProperties.Contains(propertyName) ? "[redacted]" : value;
 

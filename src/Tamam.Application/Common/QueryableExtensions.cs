@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
+using Tamam.Domain.Common;
+
 namespace Tamam.Application.Common;
 
 public static class QueryableExtensions
@@ -32,5 +34,23 @@ public static class QueryableExtensions
         var items = await project(query.Skip((safePage - 1) * safeSize).Take(safeSize)).ToListAsync(cancellationToken);
 
         return new PagedResult<TResult>(items, safePage, safeSize, total);
+    }
+
+    /// <summary>
+    /// Keeps the rows whose normalized search text contains every word of <paramref name="search" /> (anywhere inside a word, so "الر" finds "عبدالرحمن").
+    /// A phone typed with a leading zero also matches the stored international form.
+    /// </summary>
+    public static IQueryable<T> WhereMatchesSearch<T>(this IQueryable<T> query, string? search) where T : class, ISearchable
+    {
+        foreach (var word in ArabicSearch.Words(search))
+        {
+            var phoneVariant = ArabicSearch.PhoneVariant(word);
+
+            query = phoneVariant is null
+                ? query.Where(item => item.SearchText.Contains(word))
+                : query.Where(item => item.SearchText.Contains(word) || item.SearchText.Contains(phoneVariant));
+        }
+
+        return query;
     }
 }

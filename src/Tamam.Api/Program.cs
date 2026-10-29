@@ -70,6 +70,10 @@ var app = builder.Build();
 
 await app.Services.SeedPlatformAdminAsync();
 
+await app.Services.BackfillSearchTextAsync();
+
+await app.Services.BackfillSearchTextAsync();
+
 app.UseExceptionHandler();
 
 app.UseApiStatusCodePages();

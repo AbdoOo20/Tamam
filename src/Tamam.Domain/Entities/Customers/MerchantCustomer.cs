@@ -2,7 +2,7 @@ using Tamam.Domain.Common;
 
 namespace Tamam.Domain.Entities;
 
-public class MerchantCustomer : BaseEntity<long>
+public class MerchantCustomer : BaseEntity<long>, ISearchable
 {
     public int MerchantId { get; set; }
 
@@ -14,6 +14,8 @@ public class MerchantCustomer : BaseEntity<long>
 
     public string? AltPhoneE164 { get; set; }
 
+    public string SearchText { get; set; } = string.Empty;
+
     public bool? HasWhatsApp { get; set; }
 
     public string? Notes { get; set; }
@@ -23,4 +25,6 @@ public class MerchantCustomer : BaseEntity<long>
     public Customer Customer { get; set; } = null!;
 
     public ICollection<Order> Orders { get; set; } = [];
+
+    public string BuildSearchText() => ArabicSearch.Build(FullName, PhoneE164, AltPhoneE164);
 }

@@ -20,6 +20,8 @@ public class MerchantCustomerConfiguration : IEntityTypeConfiguration<MerchantCu
 
         builder.Property(x => x.AltPhoneE164).HasMaxLength(20).IsUnicode(false);
 
+        builder.Property(x => x.SearchText).HasMaxLength(400);
+
         builder.Property(x => x.Notes).HasMaxLength(500);
 
         builder.HasOne(x => x.Merchant)

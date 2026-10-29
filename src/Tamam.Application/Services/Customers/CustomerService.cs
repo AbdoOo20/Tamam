@@ -22,9 +22,7 @@ public class CustomerService(IUnitOfWork unitOfWork, IUserAppService userAppServ
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var term = query.Search.Trim();
-
-            customers = customers.Where(customer => customer.FullName.Contains(term) || customer.PhoneE164.Contains(term));
+            customers = customers.WhereMatchesSearch(query.Search);
         }
 
         var page = await customers

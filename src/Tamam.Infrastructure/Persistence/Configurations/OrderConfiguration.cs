@@ -25,6 +25,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(x => x.RecipientPhoneE164).HasMaxLength(20).IsUnicode(false);
 
+        builder.Property(x => x.SearchText).HasMaxLength(400);
+
         builder.Property(x => x.AltPhoneE164).HasMaxLength(20).IsUnicode(false);
 
         builder.Property(x => x.CountryCode).HasMaxLength(2).IsFixedLength().IsUnicode(false);

@@ -25,9 +25,7 @@ public class ProductService(IUnitOfWork unitOfWork, IUserAppService userAppServi
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var term = query.Search.Trim();
-
-            products = products.Where(product => product.Name.Contains(term) || (product.Sku != null && product.Sku.Contains(term)));
+            products = products.WhereMatchesSearch(query.Search);
         }
 
         var page = await products
