@@ -71,7 +71,7 @@ public class PublicOrderService(IUnitOfWork unitOfWork, IOrderOutcomeService out
             order.ExpectedDeliveryDate = date;
         }
 
-        Move(order, OrderStatusType.Confirmed, "Customer confirmed the order.", now);
+        Move(order, OrderStatusType.Confirmed, "أكّد العميل الطلب.", now);
 
         var confirmation = await LatestConfirmationAsync(order.Id, cancellationToken);
 
@@ -122,7 +122,7 @@ public class PublicOrderService(IUnitOfWork unitOfWork, IOrderOutcomeService out
 
         order.ExpectedDeliveryDate = date;
 
-        Move(order, OrderStatusType.Confirmed, "Customer rescheduled the delivery.", now);
+        Move(order, OrderStatusType.Confirmed, "طلب العميل تعديل موعد التسليم.", now);
 
         var confirmation = await LatestConfirmationAsync(order.Id, cancellationToken);
 
@@ -164,7 +164,7 @@ public class PublicOrderService(IUnitOfWork unitOfWork, IOrderOutcomeService out
 
         var now = DateTime.UtcNow;
 
-        Move(order, OrderStatusType.CancelledByCustomer, "Customer cancelled the order.", now);
+        Move(order, OrderStatusType.CancelledByCustomer, "ألغى العميل الطلب.", now);
 
         var confirmation = await LatestConfirmationAsync(order.Id, cancellationToken);
 

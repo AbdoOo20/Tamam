@@ -451,7 +451,7 @@ public class OrderService(
 
             ChangedByUserId = userAppService.UserId,
 
-            Note = "Order items updated.",
+            Note = "تم تعديل منتجات الطلب.",
 
             ChangedAt = DateTime.UtcNow
         });

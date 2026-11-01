@@ -230,7 +230,7 @@ public class OrderCreationService(
 
             ChangedByUserId = userAppService.UserId,
 
-            Note = isHistorical ? "Imported historical order." : "Order created.",
+            Note = isHistorical ? "طلب تاريخي مستورد." : "تم إنشاء الطلب.",
 
             ChangedAt = now
         });
