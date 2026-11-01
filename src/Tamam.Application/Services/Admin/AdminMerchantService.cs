@@ -18,7 +18,7 @@ using Tamam.Domain.Enums;
 
 namespace Tamam.Application.Services.Admin;
 
-public class AdminMerchantService(IUnitOfWork unitOfWork, IBillingService billingService, IQualityStatService qualityStats) : IAdminMerchantService
+public class AdminMerchantService(IUnitOfWork unitOfWork, IBillingService billingService, IQualityStatService qualityStats, IMerchantAccessService merchantAccess) : IAdminMerchantService
 {
     public async Task<Result<AdminOverviewDto>> GetOverviewAsync(CancellationToken cancellationToken = default)
     {
@@ -226,6 +226,8 @@ public class AdminMerchantService(IUnitOfWork unitOfWork, IBillingService billin
         merchant.Status = request.Status;
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        merchantAccess.Forget(id);
 
         return await GetByIdAsync(id, cancellationToken);
     }

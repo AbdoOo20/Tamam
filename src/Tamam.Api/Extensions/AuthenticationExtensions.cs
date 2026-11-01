@@ -10,6 +10,8 @@ using Tamam.Api.Authentication;
 
 using Tamam.Api.Hubs;
 
+using Tamam.Application.Abstractions;
+
 using Tamam.Application.Common;
 
 using Tamam.Application.Settings;
@@ -18,6 +20,8 @@ namespace Tamam.Api.Extensions;
 
 public static class AuthenticationExtensions
 {
+    private const string MerchantNotActive = "The merchant account is not active.";
+
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
     {
         services
@@ -63,11 +67,30 @@ public static class AuthenticationExtensions
                     return Task.CompletedTask;
                 },
 
+                OnTokenValidated = async context =>
+                {
+                    var merchantClaim = context.Principal?.FindFirst(AppClaimTypes.MerchantId)?.Value;
+
+                    if (!int.TryParse(merchantClaim, out var merchantId))
+                    {
+                        return;
+                    }
+
+                    var merchantAccess = context.HttpContext.RequestServices.GetRequiredService<IMerchantAccessService>();
+
+                    if (!await merchantAccess.IsActiveAsync(merchantId, context.HttpContext.RequestAborted))
+                    {
+                        context.Fail(MerchantNotActive);
+                    }
+                },
+
                 OnChallenge = async context =>
                 {
                     context.HandleResponse();
 
-                    await context.Response.WriteResultAsync(Result.Unauthorized(), context.HttpContext.RequestAborted);
+                    var message = context.AuthenticateFailure?.Message == MerchantNotActive ? IMerchantAccessService.NotActiveMessage : null;
+
+                    await context.Response.WriteResultAsync(Result.Unauthorized(message), context.HttpContext.RequestAborted);
                 },
 
                 OnForbidden = context => context.Response.WriteResultAsync(Result.Forbidden(), context.HttpContext.RequestAborted)

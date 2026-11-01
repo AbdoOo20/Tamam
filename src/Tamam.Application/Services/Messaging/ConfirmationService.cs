@@ -185,7 +185,7 @@ public class ConfirmationService(IUnitOfWork unitOfWork, IUserAppService userApp
 
                 ChangedByUserId = userAppService.UserId,
 
-                Note = "Confirmation message sent.",
+                Note = "تم إرسال رسالة التأكيد.",
 
                 ChangedAt = now
             });
