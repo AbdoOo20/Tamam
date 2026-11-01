@@ -1,23 +1,13 @@
 using Tamam.Api.BackgroundServices;
-
-using Tamam.Api.Extensions;
-
-using Tamam.Api.Hubs;
-
 using Tamam.Api.ExceptionHandling;
-
+using Tamam.Api.Extensions;
+using Tamam.Api.Hubs;
 using Tamam.Api.OpenApi;
-
 using Tamam.Api.Services;
-
 using Tamam.Application;
-
 using Tamam.Application.Abstractions;
-
 using Tamam.Application.Settings;
-
 using Tamam.Infrastructure;
-
 using Tamam.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -78,7 +68,7 @@ app.UseExceptionHandler();
 
 app.UseApiStatusCodePages();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Swagger:Enabled"))
 {
     app.MapOpenApi();
 
