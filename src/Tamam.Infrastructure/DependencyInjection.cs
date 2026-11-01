@@ -47,6 +47,10 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+        services.AddMemoryCache();
+
+        services.AddSingleton<IMerchantAccessService, MerchantAccessService>();
+
         services.AddScoped<IAuthService, AuthService>();
 
         services.AddScoped<IStaffService, StaffService>();

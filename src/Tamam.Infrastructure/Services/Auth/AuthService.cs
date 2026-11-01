@@ -28,7 +28,7 @@ using Tamam.Domain.Enums;
 
 namespace Tamam.Infrastructure.Services.Auth;
 
-public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, IOptions<JwtSettings> jwtOptions) : IAuthService
+public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, IOptions<JwtSettings> jwtOptions, IMerchantAccessService merchantAccess) : IAuthService
 {
     private readonly JwtSettings jwt = jwtOptions.Value;
 
@@ -151,6 +151,11 @@ public class AuthService(UserManager<User> userManager, IUnitOfWork unitOfWork, 
             await userManager.AccessFailedAsync(user);
 
             return Result<AuthResponse>.Unauthorized(invalidCredentials);
+        }
+
+        if (user.MerchantId is { } merchantId && !await merchantAccess.IsActiveAsync(merchantId, cancellationToken))
+        {
+            return Result<AuthResponse>.Forbidden(IMerchantAccessService.NotActiveMessage);
         }
 
         await userManager.ResetAccessFailedCountAsync(user);
